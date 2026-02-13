@@ -6,6 +6,7 @@ from app.services.execution_service import create_execution, get_execution
 from app.db.session import SessionLocal
 
 router = APIRouter(prefix="/executions", tags=["executions"])
+from app.executor.executor import run_execution
 
 def get_db():
     db = SessionLocal()
@@ -16,7 +17,12 @@ def get_db():
 
 @router.post("/", response_model=ExecutionResponse)
 def create(data: ExecutionCreate, db: Session = Depends(get_db)):
-    return create_execution(db, data.workflow_id, data.input)
+    execution = create_execution(db, data.workflow_id, data.input)
+
+    # 🔥 Run execution immediately (Day 4 behavior)
+    run_execution(db, execution)
+
+    return execution
 
 @router.get("/{3fa85f64-5717-4562-b3fc-2c963f66afa6}", response_model=ExecutionResponse)
 def get(execution_id, db: Session = Depends(get_db)):
